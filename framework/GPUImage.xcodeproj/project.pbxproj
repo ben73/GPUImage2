@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		B5539F8C1F53FD7E00C472C1 /* OverlayImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5539F8B1F53FD7E00C472C1 /* OverlayImage.swift */; };
-		B5539F8D1F53FDA300C472C1 /* OverlayImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5539F8B1F53FD7E00C472C1 /* OverlayImage.swift */; };
+		B5539F8F1F54021100C472C1 /* OverlayImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5539F8E1F54021100C472C1 /* OverlayImage.swift */; };
+		B5539F901F54022A00C472C1 /* OverlayImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5539F8E1F54021100C472C1 /* OverlayImage.swift */; };
 		BC09239E1C92658200A2ADFA /* ShaderProgram_Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC09239D1C92658200A2ADFA /* ShaderProgram_Tests.swift */; };
 		BC0923A11C92661D00A2ADFA /* Pipeline_Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC09239F1C9265A600A2ADFA /* Pipeline_Tests.swift */; };
 		BC0923A21C92664900A2ADFA /* Framebuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCB279EB1C8D11630013E213 /* Framebuffer.swift */; };
@@ -372,7 +372,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		B5539F8B1F53FD7E00C472C1 /* OverlayImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OverlayImage.swift; sourceTree = "<group>"; };
+		B5539F8E1F54021100C472C1 /* OverlayImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OverlayImage.swift; path = Source/Operations/OverlayImage.swift; sourceTree = "<group>"; };
 		BC09239D1C92658200A2ADFA /* ShaderProgram_Tests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ShaderProgram_Tests.swift; path = Tests/ShaderProgram_Tests.swift; sourceTree = SOURCE_ROOT; };
 		BC09239F1C9265A600A2ADFA /* Pipeline_Tests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Pipeline_Tests.swift; path = Tests/Pipeline_Tests.swift; sourceTree = SOURCE_ROOT; };
 		BC1E12F41C9F2FD7008F844F /* ThreeInput.vsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = ThreeInput.vsh; path = Source/Operations/Shaders/ThreeInput.vsh; sourceTree = "<group>"; };
@@ -847,6 +847,7 @@
 		BC4EE14A1CB33BBF00AD8A65 /* Image processing */ = {
 			isa = PBXGroup;
 			children = (
+				B5539F8E1F54021100C472C1 /* OverlayImage.swift */,
 				BC7FD14B1CB0BBC700037949 /* ChromaKeying.swift */,
 				BC7FD1491CB0BBAD00037949 /* ChromaKey_GL.fsh */,
 				BC7729591CB30B4E004C9E0B /* Convolution3x3.swift */,
@@ -932,7 +933,6 @@
 				BCA4E2481CC3EF26007B51BA /* ColourFASTFeatureDetection.swift */,
 				BCA4E24B1CC3F3C5007B51BA /* ColourFASTDecriptor.vsh */,
 				BCA4E24A1CC3F3C5007B51BA /* ColourFASTDecriptor_GL.fsh */,
-				B5539F8B1F53FD7E00C472C1 /* OverlayImage.swift */,
 			);
 			name = "Image processing";
 			sourceTree = "<group>";
@@ -1413,7 +1413,7 @@
 				BC7FD0BB1CA7799B00037949 /* Halftone.swift in Sources */,
 				BC4EE15A1CB346F300AD8A65 /* SketchFilter.swift in Sources */,
 				BC7FD1751CB1C22200037949 /* Pixellate.swift in Sources */,
-				B5539F8C1F53FD7E00C472C1 /* OverlayImage.swift in Sources */,
+				B5539F8F1F54021100C472C1 /* OverlayImage.swift in Sources */,
 				BC7FD1561CB0C42000037949 /* AmatorkaFilter.swift in Sources */,
 				BC4EE16F1CB3554200AD8A65 /* RawDataOutput.swift in Sources */,
 				BCFF46CD1CB9C0A700A0C521 /* BilateralBlur.swift in Sources */,
@@ -1555,7 +1555,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B5539F8D1F53FDA300C472C1 /* OverlayImage.swift in Sources */,
+				B5539F901F54022A00C472C1 /* OverlayImage.swift in Sources */,
 				BC9E359D1E52575E00B8604F /* CannyEdgeDetection.swift in Sources */,
 				BC9E35CB1E5257F300B8604F /* LinearBurnBlend.swift in Sources */,
 				BC9E35761E5256E500B8604F /* MissEtikateFilter.swift in Sources */,

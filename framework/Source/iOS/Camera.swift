@@ -11,15 +11,16 @@ public enum PhysicalCameraLocation {
     // Documentation: "The front-facing camera would always deliver buffers in AVCaptureVideoOrientationLandscapeLeft and the back-facing camera would always deliver buffers in AVCaptureVideoOrientationLandscapeRight."
     func imageOrientation() -> ImageOrientation {
         switch self {
-            case .backFacing: return .landscapeRight
-            case .frontFacing: return .landscapeLeft
+        case .backFacing: return .portrait
+        case .frontFacing: return .portrait
+            
         }
     }
     
     func captureDevicePosition() -> AVCaptureDevicePosition {
         switch self {
-            case .backFacing: return .back
-            case .frontFacing: return .front
+        case .backFacing: return .back
+        case .frontFacing: return .front
         }
     }
     
@@ -40,6 +41,22 @@ struct CameraError: Error {
 
 let initialBenchmarkFramesToIgnore = 5
 
+public extension AVCaptureVideoDataOutput {
+    
+    public var videoCaptureConnection: AVCaptureConnection? {
+        get {
+            for connection in self.connections {
+                for port in (connection as! AVCaptureConnection).inputPorts {
+                    if (port as AnyObject).mediaType == AVMediaTypeVideo {
+                        return connection as? AVCaptureConnection
+                    }
+                }
+            }
+            return nil
+        }
+    }
+}
+
 public class Camera: NSObject, ImageSource, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAudioDataOutputSampleBufferDelegate {
     public var location:PhysicalCameraLocation {
         didSet {
@@ -51,15 +68,15 @@ public class Camera: NSObject, ImageSource, AVCaptureVideoDataOutputSampleBuffer
     public var audioEncodingTarget:AudioEncodingTarget? {
         didSet {
             guard let audioEncodingTarget = audioEncodingTarget else {
-                self.removeAudioInputsAndOutputs()
+                //                self.removeAudioInputsAndOutputs()
                 return
             }
-            do {
-                try self.addAudioInputsAndOutputs()
-                audioEncodingTarget.activateAudioTrack()
-            } catch {
-                fatalError("ERROR: Could not connect audio target with error: \(error)")
-            }
+            //            do {
+            //                try self.addAudioInputsAndOutputs()
+            audioEncodingTarget.activateAudioTrack()
+            //            } catch {
+            //                fatalError("ERROR: Could not connect audio target with error: \(error)")
+            //            }
         }
     }
     
@@ -68,32 +85,32 @@ public class Camera: NSObject, ImageSource, AVCaptureVideoDataOutputSampleBuffer
     public let captureSession:AVCaptureSession
     let inputCamera:AVCaptureDevice!
     let videoInput:AVCaptureDeviceInput!
-    let videoOutput:AVCaptureVideoDataOutput!
+    public let videoOutput:AVCaptureVideoDataOutput!
     var microphone:AVCaptureDevice?
     var audioInput:AVCaptureDeviceInput?
     var audioOutput:AVCaptureAudioDataOutput?
-
+    
     var supportsFullYUVRange:Bool = false
     let captureAsYUV:Bool
     let yuvConversionShader:ShaderProgram?
     let frameRenderingSemaphore = DispatchSemaphore(value:1)
-    let cameraProcessingQueue = DispatchQueue.global(priority:DispatchQueue.GlobalQueuePriority.default)
-    let audioProcessingQueue = DispatchQueue.global(priority:DispatchQueue.GlobalQueuePriority.default)
-
+    let cameraProcessingQueue = DispatchQueue.global(qos: .default)
+    let audioProcessingQueue = DispatchQueue.global(qos: .default)
+    
     let framesToIgnore = 5
     var numberOfFramesCaptured = 0
     var totalFrameTimeDuringCapture:Double = 0.0
     var framesSinceLastCheck = 0
     var lastCheckTime = CFAbsoluteTimeGetCurrent()
-
+    
     public init(sessionPreset:String, cameraDevice:AVCaptureDevice? = nil, location:PhysicalCameraLocation = .backFacing, captureAsYUV:Bool = true) throws {
         
         self.location = location
         self.captureAsYUV = captureAsYUV
-
+        
         self.captureSession = AVCaptureSession()
         self.captureSession.beginConfiguration()
-
+        
         if let cameraDevice = cameraDevice {
             self.inputCamera = cameraDevice
         } else {
@@ -125,7 +142,7 @@ public class Camera: NSObject, ImageSource, AVCaptureVideoDataOutputSampleBuffer
         // Add the video frame output
         videoOutput = AVCaptureVideoDataOutput()
         videoOutput.alwaysDiscardsLateVideoFrames = false
-
+        
         if captureAsYUV {
             supportsFullYUVRange = false
             let supportedPixelFormats = videoOutput.availableVideoCVPixelFormatTypes
@@ -146,16 +163,26 @@ public class Camera: NSObject, ImageSource, AVCaptureVideoDataOutputSampleBuffer
             yuvConversionShader = nil
             videoOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as AnyHashable:NSNumber(value:Int32(kCVPixelFormatType_32BGRA))]
         }
-
+        
         if (captureSession.canAddOutput(videoOutput)) {
             captureSession.addOutput(videoOutput)
         }
         captureSession.sessionPreset = sessionPreset
+        
+        if let videoCaptureConnection = videoOutput.videoCaptureConnection {
+            videoCaptureConnection.isVideoMirrored = location == .frontFacing
+            if videoCaptureConnection.isVideoOrientationSupported {
+                videoCaptureConnection.videoOrientation = .portrait
+            }
+        }
+        
         captureSession.commitConfiguration()
-
+        
         super.init()
         
         videoOutput.setSampleBufferDelegate(self, queue:cameraProcessingQueue)
+        
+        try? addAudioInputsAndOutputs()
     }
     
     deinit {
@@ -171,9 +198,9 @@ public class Camera: NSObject, ImageSource, AVCaptureVideoDataOutputSampleBuffer
             self.processAudioSampleBuffer(sampleBuffer)
             return
         }
-
+        
         guard (frameRenderingSemaphore.wait(timeout:DispatchTime.now()) == DispatchTimeoutResult.success) else { return }
-    
+        
         let startTime = CFAbsoluteTimeGetCurrent()
         
         let cameraFrame = CMSampleBufferGetImageBuffer(sampleBuffer)!
@@ -260,11 +287,11 @@ public class Camera: NSObject, ImageSource, AVCaptureVideoDataOutputSampleBuffer
                 
                 self.framesSinceLastCheck += 1
             }
-
+            
             self.frameRenderingSemaphore.signal()
         }
     }
-
+    
     public func startCapture() {
         self.numberOfFramesCaptured = 0
         self.totalFrameTimeDuringCapture = 0
@@ -297,7 +324,7 @@ public class Camera: NSObject, ImageSource, AVCaptureVideoDataOutputSampleBuffer
         microphone = AVCaptureDevice.defaultDevice(withMediaType:AVMediaTypeAudio)
         audioInput = try AVCaptureDeviceInput(device:microphone)
         if captureSession.canAddInput(audioInput) {
-           captureSession.addInput(audioInput)
+            captureSession.addInput(audioInput)
         }
         audioOutput = AVCaptureAudioDataOutput()
         if captureSession.canAddOutput(audioOutput) {

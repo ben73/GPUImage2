@@ -83,8 +83,8 @@ public class Camera: NSObject, ImageSource, AVCaptureVideoDataOutputSampleBuffer
     public let targets = TargetContainer()
     public var delegate: CameraDelegate?
     public let captureSession:AVCaptureSession
-    let inputCamera:AVCaptureDevice!
-    let videoInput:AVCaptureDeviceInput!
+    var inputCamera:AVCaptureDevice!
+    var videoInput:AVCaptureDeviceInput!
     public let videoOutput:AVCaptureVideoDataOutput!
     var microphone:AVCaptureDevice?
     var audioInput:AVCaptureDeviceInput?
@@ -309,6 +309,33 @@ public class Camera: NSObject, ImageSource, AVCaptureVideoDataOutputSampleBuffer
     
     public func transmitPreviousImage(to target:ImageConsumer, atIndex:UInt) {
         // Not needed for camera inputs
+    }
+
+    public func rotateCamera() throws {
+        self.captureSession.beginConfiguration()
+        location = location == .backFacing ? .frontFacing : .backFacing
+        
+        if let prevVideoInput = videoInput {
+            captureSession.removeInput(prevVideoInput)
+        }
+        
+        if let device = location.device() {
+            inputCamera = device
+        } else {
+            throw CameraError()
+        }
+        
+        self.videoInput = try AVCaptureDeviceInput(device:inputCamera)
+        captureSession.addInput(videoInput)
+        
+        if let videoCaptureConnection = videoOutput.videoCaptureConnection {
+            videoCaptureConnection.isVideoMirrored = location == .frontFacing
+            if videoCaptureConnection.isVideoOrientationSupported {
+                videoCaptureConnection.videoOrientation = .portrait
+            }
+        }
+        self.captureSession.commitConfiguration()
+        debugPrint("new location: \(location)")
     }
     
     // MARK: -

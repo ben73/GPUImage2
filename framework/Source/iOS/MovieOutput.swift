@@ -12,7 +12,7 @@ public class MovieOutput: ImageConsumer, AudioEncodingTarget {
     let assetWriter:AVAssetWriter
     let assetWriterVideoInput:AVAssetWriterInput
     var assetWriterAudioInput:AVAssetWriterInput?
-
+    
     let assetWriterPixelBufferInput:AVAssetWriterInputPixelBufferAdaptor
     let size:Size
     let colorSwizzlingShader:ShaderProgram
@@ -116,6 +116,21 @@ public class MovieOutput: ImageConsumer, AudioEncodingTarget {
         }
     }
     
+    public var duration: CMTime {
+        get {
+            guard let startTime = startTime, CMTIME_IS_VALID(startTime) else {
+                return kCMTimeZero
+            }
+            if !CMTIME_IS_NEGATIVEINFINITY(previousFrameTime) {
+                return CMTimeSubtract(previousFrameTime, startTime)
+            }
+            if !CMTIME_IS_NEGATIVEINFINITY(previousAudioTime) {
+                return CMTimeSubtract(previousAudioTime, startTime)
+            }
+            return kCMTimeZero
+        }
+    }
+    
     public func newFramebufferAvailable(_ framebuffer:Framebuffer, fromSourceIndex:UInt) {
         defer {
             framebuffer.unlock()
@@ -126,6 +141,7 @@ public class MovieOutput: ImageConsumer, AudioEncodingTarget {
         // If two consecutive times with the same value are added to the movie, it aborts recording, so I bail on that case
         guard (frameTime != previousFrameTime) else { return }
         
+        
         if (startTime == nil) {
             if (assetWriter.status != .writing) {
                 assetWriter.startWriting()
@@ -134,6 +150,8 @@ public class MovieOutput: ImageConsumer, AudioEncodingTarget {
             assetWriter.startSession(atSourceTime: frameTime)
             startTime = frameTime
         }
+        
+        previousFrameTime = frameTime
         
         // TODO: Run the following on an internal movie recording dispatch queue, context
         guard (assetWriterVideoInput.isReadyForMoreMediaData || (!encodingLiveVideo)) else {
@@ -179,7 +197,7 @@ public class MovieOutput: ImageConsumer, AudioEncodingTarget {
     
     // MARK: -
     // MARK: Audio support
-
+    
     public func activateAudioTrack() {
         // TODO: Add ability to set custom output settings
         assetWriterAudioInput = AVAssetWriterInput(mediaType:AVMediaTypeAudio, outputSettings:nil)
@@ -191,14 +209,8 @@ public class MovieOutput: ImageConsumer, AudioEncodingTarget {
         guard let assetWriterAudioInput = assetWriterAudioInput else { return }
         
         sharedImageProcessingContext.runOperationSynchronously{
-            let currentSampleTime = CMSampleBufferGetOutputPresentationTimeStamp(sampleBuffer)
-            if (self.startTime == nil) {
-                if (self.assetWriter.status != .writing) {
-                    self.assetWriter.startWriting()
-                }
-                
-                self.assetWriter.startSession(atSourceTime: currentSampleTime)
-                self.startTime = currentSampleTime
+            if self.startTime == nil {
+                return
             }
             
             guard (assetWriterAudioInput.isReadyForMoreMediaData || (!self.encodingLiveVideo)) else {

@@ -14,6 +14,7 @@
 public class OverlayImage: BasicOperation {
     var overlayShader: ShaderProgram!
     var overlayUniformSettings = ShaderUniformSettings()
+    var pictureInput: PictureInput!
     
     public var transformMatrix: Matrix4x4 = .identity {
         didSet {
@@ -21,8 +22,9 @@ public class OverlayImage: BasicOperation {
         }
     }
     
-    public init() {
-        super.init(vertexShader: nil, fragmentShader: PassthroughFragmentShader, numberOfInputs: 2)
+    public init(pictureInput: PictureInput) {
+        super.init(vertexShader: nil, fragmentShader: PassthroughFragmentShader, numberOfInputs: 1)
+        self.pictureInput = pictureInput
         ({ transformMatrix = .identity})()
         
         overlayShader = crashOnShaderCompileFailure(#file){try sharedImageProcessingContext.programForVertexShader(TransformVertexShader, fragmentShader:PassthroughFragmentShader)}
@@ -47,7 +49,7 @@ public class OverlayImage: BasicOperation {
         let renderSize = inputFramebuffers[0]!.size
         let w = GLfloat(2.0) / GLfloat(renderSize.width)
         let h = GLfloat(2.0) / GLfloat(renderSize.height)
-        let overlaySize = inputFramebuffers[1]!.size
+        let overlaySize = pictureInput.imageFramebuffer.size
         
         let nw: GLfloat = w * GLfloat(overlaySize.width) / GLfloat(2.0)
         let nh: GLfloat = h * GLfloat(overlaySize.height) / GLfloat(2.0) * (GLfloat(renderSize.height) / GLfloat(renderSize.width))
@@ -61,7 +63,7 @@ public class OverlayImage: BasicOperation {
         renderFramebuffer.activateFramebufferForRendering()
         glBlendFunc(GLenum(GL_ONE), GLenum(GL_ONE_MINUS_SRC_ALPHA));
         glEnable(GLenum(GL_BLEND))
-        renderQuadWithShader(overlayShader, uniformSettings:overlayUniformSettings, vertices:overlayVertices, inputTextures:[inputFramebuffers[1]!.texturePropertiesForOutputRotation(.noRotation)])
+        renderQuadWithShader(overlayShader, uniformSettings:overlayUniformSettings, vertices:overlayVertices, inputTextures:[pictureInput.imageFramebuffer.texturePropertiesForOutputRotation(.noRotation)])
         glDisable(GLenum(GL_BLEND))
     }
     

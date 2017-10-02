@@ -26,7 +26,7 @@ public class MovieOutput: ImageConsumer, AudioEncodingTarget {
     var pixelBuffer:CVPixelBuffer? = nil
     var renderFramebuffer:Framebuffer!
     
-    public init(URL:Foundation.URL, size:Size, fileType:String = AVFileType.mov, liveVideo:Bool = false, settings:[String:AnyObject]? = nil) throws {
+    public init(URL:Foundation.URL, size:Size, fileType:AVFileType = AVFileType.mov, liveVideo:Bool = false, settings:[String:AnyObject]? = nil) throws {
         if sharedImageProcessingContext.supportsTextureCaches() {
             self.colorSwizzlingShader = sharedImageProcessingContext.passthroughShader
         } else {
@@ -34,7 +34,7 @@ public class MovieOutput: ImageConsumer, AudioEncodingTarget {
         }
         
         self.size = size
-        assetWriter = try AVAssetWriter(url:URL, fileType:AVFileType(rawValue: fileType))
+        assetWriter = try AVAssetWriter(url:URL, fileType: fileType)
         // Set this to make sure that a functional movie is produced, even if the recording is cut off mid-stream. Only the last second should be lost in that case.
         assetWriter.movieFragmentInterval = CMTimeMakeWithSeconds(1.0, 1000)
         

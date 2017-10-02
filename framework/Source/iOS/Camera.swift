@@ -26,7 +26,7 @@ public enum PhysicalCameraLocation {
     
     func device() -> AVCaptureDevice? {
         let devices = AVCaptureDevice.devices(for:AVMediaType.video)
-        for case let device as AVCaptureDevice in devices {
+        for device in devices {
             if (device.position == self.captureDevicePosition()) {
                 return device
             }
@@ -46,9 +46,9 @@ public extension AVCaptureVideoDataOutput {
     public var videoCaptureConnection: AVCaptureConnection? {
         get {
             for connection in self.connections {
-                for port in (connection ).inputPorts {
-                    if (port as AnyObject).mediaType == AVMediaType.video {
-                        return connection as? AVCaptureConnection
+                for port in connection.inputPorts {
+                    if port.mediaType == AVMediaType.video {
+                        return connection
                     }
                 }
             }
@@ -145,9 +145,9 @@ public class Camera: NSObject, ImageSource, AVCaptureVideoDataOutputSampleBuffer
         
         if captureAsYUV {
             supportsFullYUVRange = false
-            let supportedPixelFormats = videoOutput.availableVideoCVPixelFormatTypes
-            for currentPixelFormat in supportedPixelFormats! {
-                if ((currentPixelFormat as! NSNumber).int32Value == Int32(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange)) {
+            let supportedPixelFormats = videoOutput.availableVideoPixelFormatTypes
+            for currentPixelFormat in supportedPixelFormats {
+                if currentPixelFormat == kCVPixelFormatType_420YpCbCr8BiPlanarFullRange {
                     supportsFullYUVRange = true
                 }
             }
@@ -193,7 +193,7 @@ public class Camera: NSObject, ImageSource, AVCaptureVideoDataOutputSampleBuffer
         }
     }
     
-    public func captureOutput(captureOutput:AVCaptureOutput, didOutput sampleBuffer:CMSampleBuffer, from connection:AVCaptureConnection) {
+    public func captureOutput(_ captureOutput:AVCaptureOutput, didOutput sampleBuffer:CMSampleBuffer, from connection:AVCaptureConnection) {
         guard (captureOutput != audioOutput) else {
             self.processAudioSampleBuffer(sampleBuffer)
             return

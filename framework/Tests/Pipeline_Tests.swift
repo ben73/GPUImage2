@@ -1,5 +1,5 @@
 import XCTest
-//@testable import GPUImage
+@testable import GPUImage
 
 class FakeOperation: ImageProcessingOperation {
     let targets = TargetContainer()

@@ -41,7 +41,10 @@ public class RenderView:UIView, ImageConsumer {
         
         let eaglLayer = self.layer as! CAEAGLLayer
         eaglLayer.isOpaque = true
-        eaglLayer.drawableProperties = [NSNumber(value:false): kEAGLDrawablePropertyRetainedBacking, kEAGLColorFormatRGBA8: kEAGLDrawablePropertyColorFormat]
+        eaglLayer.drawableProperties = [
+            kEAGLDrawablePropertyRetainedBacking: false,
+            kEAGLDrawablePropertyColorFormat: kEAGLColorFormatRGBA8
+        ]
     }
     
     deinit {

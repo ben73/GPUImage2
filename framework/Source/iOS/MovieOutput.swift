@@ -207,6 +207,7 @@ public class MovieOutput: ImageConsumer, AudioEncodingTarget {
     
     public func processAudioBuffer(_ sampleBuffer:CMSampleBuffer) {
         guard let assetWriterAudioInput = assetWriterAudioInput else { return }
+        guard isRecording else {return}
         
         sharedImageProcessingContext.runOperationSynchronously{
             if self.startTime == nil {

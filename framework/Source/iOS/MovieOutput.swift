@@ -20,8 +20,8 @@ public class MovieOutput: ImageConsumer, AudioEncodingTarget {
     private var videoEncodingIsFinished = false
     private var audioEncodingIsFinished = false
     private var startTime:CMTime?
-    private var previousFrameTime = kCMTimeNegativeInfinity
-    private var previousAudioTime = kCMTimeNegativeInfinity
+    private var previousFrameTime = CMTime.negativeInfinity
+    private var previousAudioTime = CMTime.negativeInfinity
     private var encodingLiveVideo:Bool
     var pixelBuffer:CVPixelBuffer? = nil
     var renderFramebuffer:Framebuffer!
@@ -36,7 +36,7 @@ public class MovieOutput: ImageConsumer, AudioEncodingTarget {
         self.size = size
         assetWriter = try AVAssetWriter(url:URL, fileType: fileType)
         // Set this to make sure that a functional movie is produced, even if the recording is cut off mid-stream. Only the last second should be lost in that case.
-        assetWriter.movieFragmentInterval = CMTimeMakeWithSeconds(1.0, 1000)
+        assetWriter.movieFragmentInterval = CMTimeMakeWithSeconds(1.0, preferredTimescale: 1000)
         
         var localSettings:[String:AnyObject]
         if let settings = settings {
@@ -119,7 +119,7 @@ public class MovieOutput: ImageConsumer, AudioEncodingTarget {
     public var duration: CMTime {
         get {
             guard let startTime = startTime, CMTIME_IS_VALID(startTime) else {
-                return kCMTimeZero
+                return CMTime.zero
             }
             if !CMTIME_IS_NEGATIVEINFINITY(previousFrameTime) {
                 return CMTimeSubtract(previousFrameTime, startTime)
@@ -127,7 +127,7 @@ public class MovieOutput: ImageConsumer, AudioEncodingTarget {
             if !CMTIME_IS_NEGATIVEINFINITY(previousAudioTime) {
                 return CMTimeSubtract(previousAudioTime, startTime)
             }
-            return kCMTimeZero
+            return CMTime.zero
         }
     }
     
@@ -235,7 +235,7 @@ public extension Timestamp {
     
     public var asCMTime:CMTime {
         get {
-            return CMTimeMakeWithEpoch(value, timescale, epoch)
+            return CMTimeMakeWithEpoch(value: value, timescale: timescale, epoch: epoch)
         }
     }
 }

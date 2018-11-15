@@ -83,7 +83,7 @@ public class Camera: NSObject, ImageSource, AVCaptureVideoDataOutputSampleBuffer
     public let targets = TargetContainer()
     public var delegate: CameraDelegate?
     public let captureSession:AVCaptureSession
-    var inputCamera:AVCaptureDevice!
+    public var inputCamera:AVCaptureDevice!
     var videoInput:AVCaptureDeviceInput!
     public let videoOutput:AVCaptureVideoDataOutput!
     var microphone:AVCaptureDevice?

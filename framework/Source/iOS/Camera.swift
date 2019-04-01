@@ -43,7 +43,7 @@ let initialBenchmarkFramesToIgnore = 5
 
 public extension AVCaptureVideoDataOutput {
     
-    public var videoCaptureConnection: AVCaptureConnection? {
+    var videoCaptureConnection: AVCaptureConnection? {
         get {
             for connection in self.connections {
                 for port in connection.inputPorts {
